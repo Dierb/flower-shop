@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from .yasg import ulrpatterns as doc_urls
 
 urlpatterns = [
+    path('', include("cart.urls")),
     path('admin/', admin.site.urls),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
