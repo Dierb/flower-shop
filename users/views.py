@@ -1,13 +1,12 @@
 import os
 
 from django.contrib.auth import get_user_model, authenticate
-from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from rest_framework import status
+from rest_framework import status, exceptions
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 
@@ -16,6 +15,7 @@ from rest_framework.views import APIView
 
 from .serializers import UserCreateSerializer, UserSerializer
 from .token import account_activation_token
+from .models import CustomUser
 
 
 class RegisterAPIView(APIView):
@@ -23,7 +23,7 @@ class RegisterAPIView(APIView):
     def post(self, request):
         serializer = UserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = User.objects.create_user(**serializer.validated_data, is_active=False)
+        user = CustomUser.objects.create_user(**serializer.validated_data, is_active=False)
         user.save()
         current_site = get_current_site(request)
         mail_subject = 'Activation link has been sent to your email id'
@@ -59,7 +59,12 @@ def activate(request, uidb64, token):
 
 @api_view(['POST'])
 def authorization_view(request):
-    user = authenticate(**request.data)
+    data = request.data
+    try:
+        user = CustomUser.objects.get(email=data.get('email'))
+    except CustomUser.DoesNotExist:
+        raise exceptions.AuthenticationFailed('No such user')
+
     if user:
         try:
             token = Token.objects.get(user=user)

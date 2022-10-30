@@ -1,19 +1,19 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
 from rest_framework.exceptions import ValidationError
 
-from .models import EmailAddress
+from .models import EmailAddress, CustomUser
 
 
 class UserCreateSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    nickname = serializers.CharField()
     password = serializers.CharField(min_length=8)
     email = serializers.EmailField()
+    phone_number = serializers.CharField(min_length=12)
 
-    def validate_username(self, username):
-        if User.objects.filter(username=username):
-            raise ValidationError('User already exists')
-        return username
+    def validate_nickname(self, nickname):
+        if CustomUser.objects.filter(nickname=nickname):
+            raise ValidationError('This nickname is already taken')
+        return nickname
 
     def validate_email(self, email):
         if EmailAddress.objects.filter(email=email):
@@ -23,5 +23,5 @@ class UserCreateSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = 'id username first_name last_name is_active'.split()
+        model = CustomUser
+        fields = 'id nickname first_name last_name is_active'.split()
