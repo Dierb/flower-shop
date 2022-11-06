@@ -3,17 +3,20 @@ import os
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
+from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from rest_framework import status, exceptions
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import status, exceptions, authentication
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, renderer_classes, authentication_classes
+from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import UserCreateSerializer, UserSerializer
+from .serializers import UserCreateSerializer, UserSerializer, LoginSerializer
 from .token import account_activation_token
 from .models import CustomUser
 
@@ -43,11 +46,11 @@ class RegisterAPIView(APIView):
 
 @api_view(['GET'])
 def activate(request, uidb64, token):
-    User = get_user_model()
+    CustomUser = get_user_model()
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = CustomUser.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
         user = None
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
@@ -57,18 +60,27 @@ def activate(request, uidb64, token):
         return Response({'message':'Activation link is invalid!'})
 
 
-@api_view(['POST'])
+@api_view(['POST', 'GET'])
+@renderer_classes([JSONRenderer, TemplateHTMLRenderer])
 def authorization_view(request):
-    data = request.data
-    try:
-        user = CustomUser.objects.get(email=data.get('email'))
-    except CustomUser.DoesNotExist:
-        raise exceptions.AuthenticationFailed('No such user')
+    if request.method == "GET":
+        serializer = LoginSerializer()
+        return Response(data={"serializer": serializer.data})
 
-    if user:
-        try:
-            token = Token.objects.get(user=user)
-        except Token.DoesNotExist:
-            token = Token.objects.create(user=user)
-        return Response(data={'key': token.key})
-    return Response(data={'user': user})
+    if request.method == 'POST':
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            try:
+                user = CustomUser.objects.get(email=serializer.validated_data['email'])
+            except CustomUser.DoesNotExist:
+                raise exceptions.AuthenticationFailed('No such user')
+        else:
+            raise exceptions.AuthenticationFailed('Authentication failed, please check credentials')
+
+        if user:
+            try:
+                token = Token.objects.get(user=user)
+            except Token.DoesNotExist:
+                token = Token.objects.create(user=user)
+            return Response(data={'key': token.key})
+        return Response(data={'user': user})

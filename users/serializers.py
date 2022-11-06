@@ -25,3 +25,16 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = 'id nickname first_name last_name is_active'.split()
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        max_length=100,
+        style={'placeholder': 'email', 'autofocus': True}
+    )
+    password = serializers.CharField(
+        max_length=100,
+        style={'input_type': 'password', 'placeholder': 'Password'}
+    )
+    remember_me = serializers.BooleanField(required=False, default=False)
+
