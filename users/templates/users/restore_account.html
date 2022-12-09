@@ -1,0 +1,5 @@
+{% autoescape off %}
+Hi {{ user.nickname }},
+Please click on the link to retrieve your password,
+http://{{ domain }}{% url 'restore_password_complete'  uidb64=uid token=token %}
+{% endautoescape %}

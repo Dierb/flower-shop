@@ -1,7 +1,7 @@
-from django.contrib import admin
-from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import path, include
 from .yasg import ulrpatterns as doc_urls
 from products import views
 
@@ -15,6 +15,7 @@ urlpatterns = [
     path("api/v1/product/", views.ProductAPIView.as_view()),
     path("api/v1/product/best/", views.BestProductAPIView.as_view()),
     path("api/v1/product/<int:id>/", views.ProductDetailAPIView.as_view()),
+    path('api/v1/users/', include('users.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += doc_urls
