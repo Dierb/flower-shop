@@ -29,9 +29,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-REST_FRAMEWORK = {
-    "DATETIME_FORMAT": '%d/%m/%y'
-}
 
 # Application definition
 
@@ -66,6 +63,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
+    "DATETIME_FORMAT": '%d/%m/%y'
 }
 
 AUTH_USER_MODEL = 'users.CustomUser'
