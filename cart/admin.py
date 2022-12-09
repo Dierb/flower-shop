@@ -1,9 +1,6 @@
 from django.contrib import admin
 from .models import Product, OrderProduct, Order, OrderInfo, Image
 
-admin.site.register(Product)
-admin.site.register(Image)
-
 
 class OrderInfoInline(admin.TabularInline):
     model = OrderInfo

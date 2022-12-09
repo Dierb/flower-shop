@@ -96,7 +96,10 @@ class BestProductAPIView(APIView):
 class ProductDetailAPIView(APIView):
 
     def get(self, request, id):
-        queryset = Product.objects.get(id=id)
+        try:
+            queryset = Product.objects.get(id=id)
+        except:
+             return Response(data={'errors': 'Product not found'}, status=404)
         Product.objects.filter(pk=queryset.id).update(visits=F('visits') + 1)
         serializer = ProductDetailSerializer(queryset)
         return Response({

@@ -65,7 +65,7 @@ def activate(request, uidb64, token):
 
 @api_view(['POST', 'GET'])
 @permission_classes([AllowAny])
-@renderer_classes([JSONRenderer, TemplateHTMLRenderer, BrowsableAPIRenderer])
+# @renderer_classes([JSONRenderer, TemplateHTMLRenderer, BrowsableAPIRenderer])
 def authorization_view(request):
     if request.method == "GET":
         serializer = LoginSerializer()

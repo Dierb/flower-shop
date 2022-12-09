@@ -25,8 +25,3 @@ class CartAddSerializer(serializers.Serializer):
 
 class OrderSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=50)
-    last_name = serializers.CharField(max_length=50)
-    email = serializers.EmailField()
-    phone = serializers.CharField(max_length=30)
-    country = serializers.CharField(max_length=50)
-    city = serializers.CharField(max_length=50)

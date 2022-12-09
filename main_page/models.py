@@ -1,6 +1,6 @@
 from django.db import models
 from pydoc import describe
-from unittest.util import _MAX_LENGTH
+
 
 class Header(models.Model):
     logo = models.ImageField(upload_to='')

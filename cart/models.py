@@ -1,14 +1,10 @@
 from django.db import models
 from django.utils.safestring import mark_safe
 
+from products.models import Product, Image
+from users.models import CustomUser
 
-class Image(models.Model):
-    image = models.ImageField()
 
-class Product(models.Model):
-    title = models.CharField(max_length=100, unique=True)
-    price = models.IntegerField(default=1)
-    image = models.ManyToManyField(Image, null=False, blank=True)
 
 
 CHOISES_ORDER = [
@@ -22,7 +18,7 @@ CHOISES_ORDER = [
 
 
 class Order(models.Model):
-    user = models.CharField(max_length=100)
+    user = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
     data = models.DateField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=CHOISES_ORDER, default='New', verbose_name="Статус")
 
@@ -32,7 +28,7 @@ class OrderProduct(models.Model):
     quantity = models.IntegerField(null=True, blank=True, verbose_name="Количество")
     order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name="Заказ")
     products = models.ForeignKey(Product, on_delete=models.PROTECT)
-    # image = models.ForeignKey(ImageProducts, on_delete=models.PROTECT)
+    image = models.ForeignKey(Image, on_delete=models.PROTECT)
 
     def image_tag(self):
         return mark_safe('<img src="%s" width="150" height="150" />' % (self.image.image.url))
