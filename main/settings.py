@@ -40,11 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'main',
     'main_page',
     'users',
     'cart',
     'products',
-    'rest_framework',
     'rest_framework.authtoken',
     "drf_yasg"
 ]
@@ -78,6 +78,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
+CART_SESSION_ID = "cart"
 ROOT_URLCONF = 'main.urls'
 
 TEMPLATES = [
