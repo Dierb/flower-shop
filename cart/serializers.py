@@ -7,7 +7,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = 'id title price quantity'.split()
+        fields = 'id name price quantity'.split()
 
     def get_quantity(self, obj):
         quantity = self.context.get("cart")[str(obj.id)]["quantity"]
@@ -23,5 +23,5 @@ class CartAddSerializer(serializers.Serializer):
         fields = "id title price quantity".split()
 
 
-class OrderSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=50)
+# class OrderSerializer(serializers.Serializer):
+#     name = serializers.CharField(max_length=50)

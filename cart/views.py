@@ -4,8 +4,9 @@ from rest_framework.generics import CreateAPIView
 from .models import Product, Order, OrderInfo, OrderProduct
 from rest_framework.views import APIView
 from .cart import Cart
-from .serializers import ProductSerializer, CartAddSerializer, OrderSerializer
+from .serializers import ProductSerializer, CartAddSerializer
 from rest_framework.response import Response
+from users.models import CustomUser
 
 
 class CartListAPIView(APIView):
@@ -62,14 +63,14 @@ class CartAddOrderAPIView(APIView):
 
 class OrderAPIView(CreateAPIView):
     queryset = Order.objects.all()
-    serializer_class = OrderSerializer
+    # serializer_class = OrderSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(data={'errors': serializer.errors})
+        # serializer = self.get_serializer(data=request.data)
+        # if not serializer.is_valid():
+        #     return Response(data={'errors': serializer.errors})
         cart = Cart(request)
-        user = request.data['user']
+        user = CustomUser.objects.get(id=request.user.id)
         order = Order.objects.create(user=user)
         price = cart.get_total_price()
         prices = price['price']
@@ -79,5 +80,5 @@ class OrderAPIView(CreateAPIView):
             for i in cart.cart[k]['image'].keys():
                 OrderProduct.objects.create(order_id=order.id, image_id=int(i), products_id=k, quantity=quantity)
 
-        return Response(data=self.serializer_class(order).data)
+        return Response(data={"massage": "ok"})
 
