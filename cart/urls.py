@@ -1,8 +1,11 @@
 from django.contrib import admin
 from django.urls import path, include
 from cart.cart import Cart
-from .views import CartAdd, CartList
+from .views import CartAddAPIView, CartListAPIView, CartDeleteAPIView, CartClearAPIView, OrderAPIView
 urlpatterns = [
-    path("cart/", CartList.as_view()),
-    path("cart/add/<int:id>/", CartAdd.as_view())
+    path("cart/", CartListAPIView.as_view()),
+    path("cart/add/", CartAddAPIView.as_view()),
+    path("cart/delete/<int:id>", CartDeleteAPIView.as_view()),
+    path("cart/clear/", CartClearAPIView.as_view()),
+    path("cart/order/", OrderAPIView.as_view()),
 ]
