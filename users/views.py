@@ -11,21 +11,25 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status, exceptions, authentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, renderer_classes, authentication_classes, permission_classes
+from rest_framework.generics import GenericAPIView, CreateAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer, BrowsableAPIRenderer
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet
 
 from .serializers import UserCreateSerializer, UserSerializer, LoginSerializer, \
-    RestorePasswordSerializer, RestorePasswordCompleteSerialaizer, ChangePasswordSerializer
+    RestorePasswordSerializer, RestorePasswordCompleteSerialaizer, ChangePasswordSerializer, GoogleSocialAuthSerializer
 from .token import account_activation_token
 from .models import CustomUser
 from .authentication import CustomAuthentication
 
 
-class RegisterAPIView(APIView):
-
+class RegisterAPIView(CreateAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UserCreateSerializer
     def post(self, request):
         serializer = UserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -63,15 +67,10 @@ def activate(request, uidb64, token):
         return Response({'message':'Activation link is invalid!'})
 
 
-@api_view(['POST', 'GET'])
-@permission_classes([AllowAny])
-@renderer_classes([JSONRenderer, TemplateHTMLRenderer, BrowsableAPIRenderer])
-def authorization_view(request):
-    if request.method == "GET":
-        serializer = LoginSerializer()
-        return Response(data={"serializer": serializer.data})
+class AuthorizationAPIView(CreateAPIView):
+    serializer_class = LoginSerializer
 
-    if request.method == 'POST':
+    def post(self, request, **kwargs):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             try:
@@ -94,16 +93,16 @@ class LogoutAPIView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, format=None):
-        print(request.user)
-        request.user.auth_token.delete()
+        request.auth.delete()
         return Response(data={"message": "You have successfully logged out."})
 
 
 class UserAPIView(APIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = UserSerializer
 
     def get(self, request):
-        if request.user and request.user.is_authenticated:
+        if request.auth and request.user.is_authenticated:
             user = request.user
             serializer = UserSerializer(user).data
             return Response(serializer)
@@ -111,8 +110,9 @@ class UserAPIView(APIView):
             return Response(data={'message': "You are not authenticated"})
 
 
-class RestorePasswordAPIView(APIView):
+class RestorePasswordAPIView(CreateAPIView):
     permission_classes = (AllowAny,)
+    serializer_class = RestorePasswordSerializer
 
     def post(self, request):
         serializer = RestorePasswordSerializer(data=request.data, context={'request': request})
@@ -123,13 +123,9 @@ class RestorePasswordAPIView(APIView):
         return Response(data={"message": "Please check your email to restore your account"})
 
 
-class RestorePasswordConfirmAPIView(APIView):
+class RestorePasswordConfirmAPIView(CreateAPIView):
     permission_classes = (AllowAny,)
-
-    def get(self, request, uidb64, token):
-        serrializer = RestorePasswordCompleteSerialaizer().data
-        return Response(serrializer)
-
+    serializer_class = RestorePasswordCompleteSerialaizer
 
     def post(self, request, uidb64, token):
         CustomUser = get_user_model()
@@ -151,8 +147,9 @@ class RestorePasswordConfirmAPIView(APIView):
             return Response({'message': 'Activation link is invalid!'})
 
 
-class ChangePasswordView(APIView):
+class ChangePasswordView(CreateAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = ChangePasswordSerializer
 
     def post(self, request):
         data = request.data
@@ -160,3 +157,19 @@ class ChangePasswordView(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.set_new_password()
             return Response('Password successfully changed!')
+
+
+class GoogleSocialAuthView(GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = GoogleSocialAuthSerializer
+
+    def post(self, request):
+        """
+        POST with "auth_token"
+        Send an idtoken as from google to get user information
+        """
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = ((serializer.validated_data)['auth_token'])
+        return Response(data, status=status.HTTP_200_OK)

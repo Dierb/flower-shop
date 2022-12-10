@@ -27,11 +27,15 @@ class CustomBaseUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
+AUTH_PROVIDERS = {"facebook": "facebook", "google": "google", "email": "email"}
+
+
 class CustomUser(AbstractUser):
     email = models.EmailField(verbose_name='email', max_length=128, unique=True)
     phone_number = models.CharField(max_length=13)
     username = None
     nickname = models.CharField(max_length=128, blank=False, null=True)
+    auth_provider = models.CharField(max_length=255, blank=False, null=True, default=AUTH_PROVIDERS.get('email'))
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('phone_number',)
