@@ -1,13 +1,17 @@
+import os
+
+from . import google
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, AuthenticationFailed
 
 from .models import EmailAddress, CustomUser
 from .token import account_activation_token
+from .authentication import register_social_user
 
 
 class UserCreateSerializer(serializers.Serializer):
@@ -15,6 +19,10 @@ class UserCreateSerializer(serializers.Serializer):
     password = serializers.CharField(min_length=8)
     email = serializers.EmailField()
     phone_number = serializers.CharField(min_length=12)
+
+    # class Meta:
+    #     model = CustomUser
+    #     fieldsets = ['nickname', 'password', 'email', 'phone_number']
 
     def validate_nickname(self, nickname):
         if CustomUser.objects.filter(nickname=nickname):
@@ -123,3 +131,29 @@ class ChangePasswordSerializer(serializers.Serializer):
         password = self.validated_data.get('password')
         user.set_password(password)
         user.save()
+
+
+class GoogleSocialAuthSerializer(serializers.Serializer):
+    auth_token = serializers.CharField()
+
+    def validate_auth_token(self, auth_token):
+        user_data = google.Google.validate(auth_token)
+        print(user_data)
+        try:
+            user_data['sub']
+        except:
+            raise serializers.ValidationError(
+                'The token is invalid or expired. Please login again.'
+            )
+
+        if user_data['aud'] != os.environ.get('GOOGLE_CLIENT_ID'):
+            print(user_data)
+            raise AuthenticationFailed('oops, who are you?')
+
+        user_id = user_data['sub']
+        email = user_data['email']
+        name = user_data['name']
+        provider = 'google'
+
+        return register_social_user(
+            provider=provider, user_id=user_id, email=email, name=name)
