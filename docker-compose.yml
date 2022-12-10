@@ -25,7 +25,7 @@ services:
       - .:/app
       - ./static:/static
     ports:
-      - "8003:8003"
+      - "8008:8008"
     depends_on:
       - caps_db
     links:

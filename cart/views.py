@@ -1,5 +1,7 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from rest_framework.generics import CreateAPIView
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Product, Order, OrderInfo, OrderProduct
 from rest_framework.views import APIView
@@ -38,7 +40,7 @@ class CartClearAPIView(APIView):
     def get(self, request):
         cart = Cart(request)
         cart.clear()
-        return Response(data={"message": "clear cart"})
+        return Response(data={"message": "ok"})
 
 
 class CartDeleteAPIView(APIView):
@@ -63,22 +65,28 @@ class CartAddOrderAPIView(APIView):
 
 class OrderAPIView(CreateAPIView):
     queryset = Order.objects.all()
+    permission_classes = (IsAuthenticated, )
     # serializer_class = OrderSerializer
 
     def post(self, request, *args, **kwargs):
         # serializer = self.get_serializer(data=request.data)
         # if not serializer.is_valid():
         #     return Response(data={'errors': serializer.errors})
-        cart = Cart(request)
-        user = CustomUser.objects.get(id=request.user.id)
-        order = Order.objects.create(user=user)
-        price = cart.get_total_price()
-        prices = price['price']
-        quantity = price['quantity']
-        OrderInfo.objects.create(order_id=order.id, price=prices, total_price=prices, quantity=quantity)
-        for k in cart.cart.keys():
-            for i in cart.cart[k]['image'].keys():
-                OrderProduct.objects.create(order_id=order.id, image_id=int(i), products_id=k, quantity=quantity)
-
-        return Response(data={"massage": "ok"})
+        if request.user.is_authenticated:
+            cart = Cart(request)
+            user = CustomUser.objects.get(id=request.user.id)
+            order = Order.objects.create(user=user)
+            price = cart.get_total_price()
+            prices = price['price']
+            quantity = price['quantity']
+            OrderInfo.objects.create(order_id=order.id, price=prices, total_price=prices, quantity=quantity)
+            for k in cart.cart.keys():
+                for i in cart.cart[k]['image'].keys():
+                    OrderProduct.objects.create(order_id=order.id, image_id=int(i), products_id=k, quantity=quantity)
+                    cart.clear()
+            if len(cart) == 0:
+                return Response(data={"massage": "cart is empty"})
+            return Response(data={"massage": "ok"})
+        else:
+            return Response(data={"redirect_to":"http:127:0.0.1:8000/api/v1/users/authorization/"})
 

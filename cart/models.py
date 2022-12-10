@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.safestring import mark_safe
 
-from products.models import Product, Image
+from products.models import Product, Image, Color
 from users.models import CustomUser
 
 
