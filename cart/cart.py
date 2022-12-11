@@ -18,22 +18,25 @@ class Cart(object):
         self.session[settings.CART_SESSION_ID] = self.cart
         self.session.modified = True
 
-    def add(self, product, image_id, quantity=1, update_quantity=False):
+    def add(self, product, color, quantity=1, update_quantity=False):
         """Добавление и обновление товара в карзине"""
         product_id = str(product.id)
-        image = Image.objects.get(id=image_id)
-        image_id = str(image_id)
         if product_id not in self.cart:
             self.cart[product_id] = {'quantity': 0,
                                      'price': str(product.price),
-                                     'image': {image_id:
-                                                   {'image': image.image.url
-                                                    }},
+                                     'color': {color: 0},
                                      }
+        if product_id in self.cart and color not in self.cart[product_id]['color']:
+            self.cart[product_id]['color'][color] = quantity
+
         if update_quantity:
-            self.cart[product_id]['quantity'] = quantity
+            self.cart[product_id]['quantity'] -= self.cart[product_id]['color'][color]
+            self.cart[product_id]['color'][color] = quantity
+            self.cart[product_id]['quantity'] += quantity
+
         else:
             self.cart[product_id]['quantity'] += quantity
+            self.cart[product_id]['color'][color] += quantity
         self.save()
 
     def remove(self, product):
