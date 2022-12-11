@@ -53,5 +53,7 @@ class Product(models.Model):
     color = models.ManyToManyField(Color, null=False, blank=True)
     size = models.CharField(max_length=5)
 
+    def __str__(self):
+        return self.name
 
 

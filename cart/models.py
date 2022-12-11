@@ -28,7 +28,10 @@ class OrderProduct(models.Model):
     quantity = models.IntegerField(null=True, blank=True, verbose_name="Количество")
     order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name="Заказ")
     products = models.ForeignKey(Product, on_delete=models.PROTECT)
-    image = models.ForeignKey(Image, on_delete=models.PROTECT)
+    color = models.CharField(max_length=30, null=True)
+
+    def __str__(self):
+        return self.products.name
 
     def image_tag(self):
         return mark_safe('<img src="%s" width="150" height="150" />' % (self.image.image.url))
@@ -43,13 +46,6 @@ class OrderProduct(models.Model):
     def new_price(self):
         return self.products.new_price
 
-    @property
-    def size_range(self):
-        return self.products.size_range
-
-    @property
-    def color(self):
-        return self.image.color
 
 
 class OrderInfo(models.Model):
@@ -57,4 +53,3 @@ class OrderInfo(models.Model):
     price = models.IntegerField()
     total_price = models.IntegerField()
     order = models.ForeignKey(Order,  on_delete=models.CASCADE)
-

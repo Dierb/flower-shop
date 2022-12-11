@@ -6,7 +6,8 @@ class OrderInfoInline(admin.TabularInline):
     model = OrderInfo
     max_num = 1
 
-class OrderProductInline(admin.TabularInline):
+
+class OrderProductInline(admin.StackedInline):
     model = OrderProduct
     readonly_fields = ('price', )
 

@@ -26,17 +26,20 @@ class Cart(object):
                                      'price': str(product.price),
                                      'color': {color: 0},
                                      }
-        if product_id in self.cart and color not in self.cart[product_id]['color']:
-            self.cart[product_id]['color'][color] = quantity
+
+        if product_id in self.cart and color not in self.cart[product_id]["color"]:
+            self.cart[product_id]['color'][color] = 0
+
 
         if update_quantity:
             self.cart[product_id]['quantity'] -= self.cart[product_id]['color'][color]
             self.cart[product_id]['color'][color] = quantity
             self.cart[product_id]['quantity'] += quantity
-
         else:
+            print(self.cart[product_id]['color'][color])
             self.cart[product_id]['quantity'] += quantity
             self.cart[product_id]['color'][color] += quantity
+            print(self.cart[product_id]['color'][color])
         self.save()
 
     def remove(self, product):

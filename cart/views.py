@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Product, Order, OrderInfo, OrderProduct
 from rest_framework.views import APIView
 from .cart import Cart
-from .serializers import ProductSerializer, CartAddSerializer
+from .serializers import ProductSerializer, CartAddSerializer, OrderSerializer
 from rest_framework.response import Response
 from users.models import CustomUser
 
@@ -31,9 +31,30 @@ class CartAddAPIView(CreateAPIView):
         id = request.data["id"]
         image_id = request.data['image_id']
         product = get_object_or_404(Product, id=id)
-        cart.add(product=product, image_id=image_id)
+        # if image_id in cart.cart[str(id)]['color'].keys():
+        #     update_quantity = True
+        # else:
+        #     update_quantity = False
+        cart.add(product=product, color=image_id)
         return Response(data={"message": "ok"})
 
+
+# class UpdateCartAPIView(CreateAPIView):
+#     serializer_class = CartAddSerializer
+#
+#     def post(self, request, **kwargs):
+#         cart = Cart(request)
+#         id = request.data["id"]
+#         image_id = request.data['image_id']
+#         product = get_object_or_404(Product, id=id)
+#         if id not in cart.cart[str(id)].keys():
+#
+#         # if image_id in cart.cart[str(id)]['color'].keys():
+#         #     update_quantity = True
+#         # else:
+#         #     update_quantity = False
+#         cart.add(product=product, color=image_id)
+#         return Response(data={"message": "ok"})
 
 class CartClearAPIView(APIView):
 
@@ -66,7 +87,9 @@ class CartAddOrderAPIView(APIView):
 class OrderAPIView(CreateAPIView):
     queryset = Order.objects.all()
     permission_classes = (IsAuthenticated, )
-    # serializer_class = OrderSerializer
+
+    def get_serializer_class(self):
+        return OrderSerializer
 
     def post(self, request, *args, **kwargs):
         # serializer = self.get_serializer(data=request.data)
@@ -81,12 +104,13 @@ class OrderAPIView(CreateAPIView):
             quantity = price['quantity']
             OrderInfo.objects.create(order_id=order.id, price=prices, total_price=prices, quantity=quantity)
             for k in cart.cart.keys():
-                for i in cart.cart[k]['image'].keys():
-                    OrderProduct.objects.create(order_id=order.id, image_id=int(i), products_id=k, quantity=quantity)
-                    cart.clear()
+                for i in cart.cart[k]['color'].keys():
+                    OrderProduct.objects.create(order_id=order.id, color=i, products_id=k, quantity=cart.cart[k]["color"][i])
+            cart.cart.clear()
             if len(cart) == 0:
                 return Response(data={"massage": "cart is empty"})
             return Response(data={"massage": "ok"})
         else:
             return Response(data={"redirect_to":"http:127:0.0.1:8000/api/v1/users/authorization/"})
+
 
