@@ -8,7 +8,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic
-        --no-input && gunicorn -b 0.0.0.0:8003 customcaps.wsgi --reload"
+      --no-input && gunicorn -b 0.0.0.0:8008 main.wsgi --reload"
     env_file:
       - .env
     volumes:
@@ -16,6 +16,10 @@ services:
       - ./static:/static
     ports:
       - "8008:8008"
+    depends_on:
+      - db_flowershop
+    links:
+      - db_flowershop
 
   nginx:
     image: nginx:latest
