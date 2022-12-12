@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from users.models import CustomUser
-
+from colorfield.fields import ColorField
 
 # Create your models here.
 
@@ -30,17 +30,6 @@ class Category(models.Model):
         return self.name
 
 
-class Color(models.Model):
-    color = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.color
-
-
-class Image(models.Model):
-    image = models.ImageField()
-
-
 class Product(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=False, blank=True)
@@ -49,11 +38,34 @@ class Product(models.Model):
     price = models.IntegerField(default=1)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     visits = models.IntegerField(default=0)
-    image = models.ManyToManyField(Image, null=False, blank=True)
-    color = models.ManyToManyField(Color, null=False, blank=True)
     size = models.CharField(max_length=5)
 
     def __str__(self):
         return self.name
+
+    @property
+    def get_color(self):
+        colors = Color.objects.filter(product=self)
+        return [{"color": i.color} for i in colors]
+
+    @property
+    def get_image(self):
+        images = Image.objects.filter(product=self)
+        return [{"id": i.id, "image": i.image.url} for i in images]
+
+
+class Image(models.Model):
+    image = models.ImageField()
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+
+class Color(models.Model):
+    color = ColorField(default="#F0000")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.color
+
+
 
 

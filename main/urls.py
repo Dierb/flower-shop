@@ -8,6 +8,8 @@ from .yasg import ulrpatterns as doc_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    path('', include("main_page.urls")),
     path('', include("cart.urls")),
     path('', include("products.urls")),
     path('api/v1/users/', include('users.urls'))

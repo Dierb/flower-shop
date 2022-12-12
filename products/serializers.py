@@ -1,12 +1,11 @@
 from django.contrib.auth.models import User
-
+from colorfield.fields import ColorField
 from users.models import CustomUser
 from .models import Review, Category, Product, Image
 from rest_framework import serializers
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = CustomUser
         fields = ["first_name", "last_name"]
@@ -17,7 +16,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ['id', 'user',  'text', 'stars', 'time_create']
+        fields = ['id', 'user', 'text', 'stars', 'time_create']
         read_only_fields = ['time_create']
 
 
@@ -44,16 +43,10 @@ class ImageSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(max_length=255)
-    price = serializers.IntegerField(min_value=1)
-    image = ImageSerializer(many=True)
-    color = serializers.StringRelatedField(many=True)
-    size = serializers.CharField(max_length=10)
-
     class Meta:
         model = Product
         fields = [
-            "id", "name", "price", "image", "color", "size"
+            "id", "name", "price", "get_color", "get_image", "size"
         ]
 
 

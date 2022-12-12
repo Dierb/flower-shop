@@ -20,12 +20,12 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class CartAddSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    image_id = serializers.CharField()
+    color = serializers.CharField()
 
     class Meta:
         model = Product
         fields = "id title price quantity".split()
 
 
-class OrderSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=50)
+# class OrderSerializer(serializers.Serializer):
+#     name = serializers.CharField(max_length=50)

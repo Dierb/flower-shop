@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'cart',
     'products',
     'rest_framework.authtoken',
-    "drf_yasg"
+    "drf_yasg",
+    "colorfield"
 ]
 
 REST_FRAMEWORK = {
