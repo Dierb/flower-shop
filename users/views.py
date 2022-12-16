@@ -21,7 +21,8 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
 from .serializers import UserCreateSerializer, UserSerializer, LoginSerializer, \
-    RestorePasswordSerializer, RestorePasswordCompleteSerialaizer, ChangePasswordSerializer, GoogleSocialAuthSerializer
+    RestorePasswordSerializer, RestorePasswordCompleteSerialaizer, ChangePasswordSerializer, GoogleSocialAuthSerializer, \
+    FacebookSocialAuthSerializer
 from .token import account_activation_token
 from .models import CustomUser
 from .authentication import CustomAuthentication
@@ -167,6 +168,22 @@ class GoogleSocialAuthView(GenericAPIView):
         """
         POST with "auth_token"
         Send an idtoken as from google to get user information
+        """
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = ((serializer.validated_data)['auth_token'])
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class FacebookSocialAuthView(GenericAPIView):
+
+    serializer_class = FacebookSocialAuthSerializer
+
+    def post(self, request):
+        """
+        POST with "auth_token"
+        Send an access token as from facebook to get user information
         """
 
         serializer = self.serializer_class(data=request.data)
